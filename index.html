@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>Telegram Quick Sender</title>
+<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+:root{
+  --bg: #0f0f10;
+  --card: rgba(35,35,35,0.6);
+  --muted: #bfbfbf;
+  --accent: linear-gradient(135deg,#0f0f10,#0f0f10);
+  --glass: rgba(255,255,255,0.04)
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:Poppins,system-ui,-apple-system; background: url('https://files.catbox.moe/cdnmdt.jpg') center/cover fixed no-repeat; color:#fff; -webkit-font-smoothing:antialiased}
+.app{
+  min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+  backdrop-filter: blur(10px);
+}
+.card{
+  width:100%; max-width:420px; border-radius:18px; padding:20px; background:linear-gradient(180deg, rgba(8,8,8,0.6), rgba(12,12,12,0.75));
+  border:1px solid rgba(255,255,255,0.06); box-shadow:0 10px 30px rgba(0,0,0,0.6);
+  overflow:hidden; position:relative;
+}
+.header{display:flex; align-items:center; gap:12px; margin-bottom:14px}
+.logo{width:56px; height:56px; border-radius:12px; background: url('https://files.catbox.moe/degfav.png') center/cover no-repeat; box-shadow:0 6px 18px rgba(100,100,100,0.2); animation:logoPulse 3s ease-in-out infinite}
+@keyframes logoPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+.title{font-weight:700; font-size:18px; line-height:1}
+.subtitle{font-size:12px; color:var(--muted)}
+.form{display:flex; flex-direction:column; gap:12px}
+.input{
+  background:var(--card); padding:10px 12px; border-radius:10px; display:flex; align-items:center; gap:10px; border:1px solid rgba(255,255,255,0.04);
+  transition:transform .18s ease, box-shadow .18s;
+}
+.input:active,.input:focus-within{transform:translateY(-3px); box-shadow:0 8px 30px rgba(0,0,0,0.5)}
+.input i{font-size:18px; color:#cfcfcf}
+.input input{flex:1; border:0; outline:none; background:transparent; color:#fff; font-size:14px}
+.small{font-size:12px; color:var(--muted)}
+.row{display:flex; gap:8px}
+.btn{
+  margin-top:4px; width:100%; display:inline-flex; align-items:center; justify-content:center; gap:10px;
+  padding:11px; border-radius:12px; background:var(--accent); color:#fff; font-weight:700; border:none; cursor:pointer;
+  box-shadow: none;
+}
+.btn:active{transform:translateY(2px)}
+.gray{background:linear-gradient(180deg,#333,#222); color:#fff; font-weight:600; border:1px solid rgba(255,255,255,0.04)}
+.controls{display:flex; gap:10px; margin-top:8px}
+.pulse{animation:pop .9s infinite alternate}
+@keyframes pop{from{transform:scale(1)}to{transform:scale(1.02)}}
+
+.progressWrap{margin-top:12px; background:var(--glass); border-radius:8px; padding:8px}
+.progressBar{height:10px; background:linear-gradient(90deg,#4fe0a7,#6c9cff); border-radius:8px; width:0%; transition:width .25s ease}
+.statusList{margin-top:10px; max-height:120px; overflow:auto; padding:6px; border-radius:8px; background:rgba(0,0,0,0.18)}
+.statusItem{display:flex; align-items:center; gap:10px; padding:6px 8px; border-radius:8px; margin-bottom:6px; background: rgba(255,255,255,0.02); font-size:13px}
+.statusItem .dot{width:10px;height:10px;border-radius:50%;background:#777}
+.statusItem.success .dot{background:#4cff8a}
+.statusItem.err .dot{background:#ff6b6b}
+.fab{position:absolute; right:14px; bottom:14px; width:46px; height:46px; border-radius:10px; background:linear-gradient(180deg,#222,#111); display:flex; align-items:center; justify-content:center; box-shadow:0 8px 26px rgba(0,0,0,0.6); cursor:pointer; border:1px solid rgba(255,255,255,0.04)}
+.fab i{font-size:20px; color:#cfd8ff}
+.note{margin-top:12px; font-size:12px; color:#bdbdbd; text-align:left}
+.small-muted{font-size:11px;color:#999;margin-top:6px}
+@media (max-width:420px){ .card{padding:16px} .logo{width:52px;height:52px} .title{font-size:16px} }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="card" role="main">
+    <div class="header">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <div class="title"><i class='bx bx-rocket'></i> Telegram Quick Sender</div>
+        <div class="subtitle">Fast send "Hai" → bot (token) → target</div>
+      </div>
+    </div>
+
+    <div class="form" id="form">
+      <label class="input">
+        <i class='bx bx-key'></i>
+        <input id="token" placeholder="Masukkan Bot Token (botXXXXXXXX:AAAA...)" autocomplete="off" />
+      </label>
+
+      <label class="input">
+        <i class='bx bx-id-card'></i>
+        <input id="target" placeholder="Masukkan chat_id (ID Target)" autocomplete="off" />
+      </label>
+
+      <div class="row">
+        <label class="input" style="flex:1">
+          <i class='bx bx-hash'></i>
+          <input id="count" placeholder="Jumlah pesan (mis. 1)" type="number" min="1" value="1" />
+        </label>
+
+        <button id="sendBtn" class="btn pulse">
+          <i class='bx bx-send'></i> Send
+        </button>
+      </div>
+
+      <div class="progressWrap" aria-hidden="false">
+        <div class="progressBar" id="progressBar"></div>
+      </div>
+
+      <div class="statusList" id="statusList" aria-live="polite"></div>
+
+      <div class="note">
+        <div class="small-muted">Pesan yang dikirim: <b>"Hai"</b></div>
+        <div class="small-muted">Token & ID disimpan lokal di device (localStorage).</div>
+      </div>
+    </div>
+
+    <div class="small-muted">Jika WebView / browser memblokir request (CORS), gunakan server proxy.</div>
+
+    <div class="fab" id="fab" title="Reload fields / reset">
+      <i class='bx bx-refresh'></i>
+    </div>
+  </div>
+</div>
+
+<script>
+const tokenEl = document.getElementById('token');
+const targetEl = document.getElementById('target');
+const countEl = document.getElementById('count');
+const sendBtn = document.getElementById('sendBtn');
+const progressBar = document.getElementById('progressBar');
+const statusList = document.getElementById('statusList');
+const fab = document.getElementById('fab');
+
+// restore saved
+if(localStorage.getItem('tg_token')) tokenEl.value = localStorage.getItem('tg_token');
+if(localStorage.getItem('tg_target')) targetEl.value = localStorage.getItem('tg_target');
+if(localStorage.getItem('tg_count')) countEl.value = localStorage.getItem('tg_count');
+
+tokenEl.addEventListener('input', ()=> localStorage.setItem('tg_token', tokenEl.value));
+targetEl.addEventListener('input', ()=> localStorage.setItem('tg_target', targetEl.value));
+countEl.addEventListener('input', ()=> localStorage.setItem('tg_count', countEl.value));
+
+// helper ui
+function addStatus(text, type){
+  const div = document.createElement('div');
+  div.className = 'statusItem ' + (type||'');
+  div.innerHTML = `<div class="dot"></div><div style="flex:1">${text}</div>`;
+  statusList.prepend(div);
+}
+
+function setProgress(p){
+  progressBar.style.width = Math.max(0, Math.min(100,p)) + '%';
+}
+
+// core send function
+async function sendMessageOnce(token, chat_id, text){
+  // Telegram Bot API endpoint
+  const url = `https://api.telegram.org/bot${encodeURIComponent(token)}/sendMessage`;
+  // fetch options
+  const body = { chat_id: chat_id, text: text };
+  try{
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await resp.json();
+    if(!resp.ok || !data.ok){
+      throw new Error(data.description || ('HTTP ' + resp.status));
+    }
+    return { ok:true, result:data.result };
+  }catch(err){
+    return { ok:false, error: (err && err.message) || 'Unknown' };
+  }
+}
+
+let sending = false;
+sendBtn.addEventListener('click', async ()=>{
+  if(sending) return;
+  const token = tokenEl.value.trim();
+  const target = targetEl.value.trim();
+  const count = Math.max(1, parseInt(countEl.value)||1);
+
+  if(!token){ addStatus('Token kosong', 'err'); return; }
+  if(!target){ addStatus('Target chat_id kosong', 'err'); return; }
+
+  // Save
+  localStorage.setItem('tg_token', token);
+  localStorage.setItem('tg_target', target);
+  localStorage.setItem('tg_count', count);
+
+  sending = true;
+  sendBtn.classList.remove('pulse');
+  sendBtn.textContent = 'Sending...';
+  addStatus(`Mulai mengirim ${count} pesan ke ${target}`, '');
+
+  let success = 0;
+  for(let i=1;i<=count;i++){
+    setProgress((i-1)/count*100);
+    addStatus(`Mengirim pesan ke ${target} (${i}/${count}) ...`);
+    // fixed text "Hai"
+    const res = await sendMessageOnce(token, target, 'Hai');
+    if(res.ok){
+      success++;
+      addStatus(`Berhasil (${i}/${count})`, 'success');
+    }else{
+      addStatus(`Gagal (${i}/${count}): ${res.error}`, 'err');
+      // stop on error? continue to next. we continue.
+    }
+    // small delay to avoid burst (adjustable)
+    await new Promise(r=>setTimeout(r, 700));
+  }
+  setProgress(100);
+  addStatus(`Selesai: ${success}/${count} berhasil`, success===count? 'success':'err');
+
+  sendBtn.textContent = 'Send';
+  sendBtn.classList.add('pulse');
+  sending = false;
+});
+
+// fab reload / reset
+fab.addEventListener('click', ()=>{
+  // quick reset and visual feedback
+  tokenEl.value = localStorage.getItem('tg_token') || '';
+  targetEl.value = localStorage.getItem('tg_target') || '';
+  countEl.value = localStorage.getItem('tg_count') || '1';
+  statusList.innerHTML = '';
+  setProgress(0);
+  addStatus('Fields reloaded', '');
+});
+
+/*
+  NOTE about CORS & WebView:
+  - If running in a normal browser you might see a CORS error because Telegram API doesn't
+    return permissive CORS headers. In many Android WebView builds requests succeed.
+  - If you get CORS block: run a small server endpoint (yourserver/send) that accepts
+    token/target/text and forwards request to Telegram (server-side). That's the safest option.
+*/
+</script>
+</body>
+</html>
